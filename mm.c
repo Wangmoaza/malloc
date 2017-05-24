@@ -59,11 +59,15 @@ team_t team = {
 #define HDRP(bp)       ((char *)(bp) - WSIZE)
 #define FTRP(bp)       ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
 
-/* Given block ptr bp, compute address of next and previous blocks */
+/* Given block ptr bp, compute address of next and previous (physical) blocks */
 #define NEXT_BLKP(bp)  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
 #define PREV_BLKP(bp)  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
 /* $end mallocmacros */
 
+/* Given block ptr bp, go to next and previous block in free list by pointer */
+#define NEXT_LIST(bp) //TODO implement this
+#define PREV_LIST(bp) //TODO implement this
+ 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
 
@@ -74,7 +78,13 @@ team_t team = {
 #define MAX_LIST = 20
 
 /* global variables */
-void *free_lists_arr[MAX_LIST]; /* array of segregation lists
+/* array of segregation lists by power of 2 starting from 16
+ * [0] : 0 - 16
+ * [1] : 17 - 32
+ * [2] : 33 - 64
+ * ...
+ */
+void *free_lists_arr[MAX_LIST]; 
 
 /* helper functions */
 static void *extend_heap(size_t words);
@@ -100,6 +110,11 @@ static void checkblock(void *bp)
     {
         printf("Error: (%p) header and footer not identical\n", bp);
     }
+
+    if (GET_SIZE(HDPR(bp)) < 2 * DSIZE)
+    {
+        printf("Error: (%p) block size is less than 16 bytes\n", bp);
+    }
 }
 
 /*
@@ -110,6 +125,7 @@ static int mm_check(void)
 {
     char *ptr;
     int list_idx = 0;
+
     size_t *heap_startp = mem_heap_lo();
     size_t *heap_endp = mem_heap_hi();
     size_t *curr_blockp = heap_startp;
@@ -129,10 +145,18 @@ static int mm_check(void)
         if (GET_ALLOC(HDPR(ptr)) == 0)
         {
             int i = 0;
+            int found_flag = 0;
             size_t search_size = GET_SIZE(HDRP(ptr));
             for (int i = 0; i < MAX_LIST; i++)
             {
+                if (free_lists_arr[i] == NULL) // list is empty
+                {
+                    search_size >>= 1; // go to next bigger list
+                    continue;
+                }
+
                 //FIXME start from here
+                search_size >>= 1; // go to next search size (* 2)
             }
         }
 
