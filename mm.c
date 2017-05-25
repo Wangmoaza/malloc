@@ -1,6 +1,7 @@
 /*
  * mm-naive.c - The fastest, least memory-efficient malloc package.
  * 
+ * Some parts of the code is modified from textbook source codes.
  * In this naive approach, a block is allocated by simply incrementing
  * the brk pointer.  A block is pure payload. There are no headers or
  * footers.  Blocks are never coalesced or reused. Realloc is
@@ -65,9 +66,13 @@ team_t team = {
 /* $end mallocmacros */
 
 /* Given block ptr bp, go to next and previous block in free list by pointer */
-#define NEXT_LIST(bp) //TODO implement this
-#define PREV_LIST(bp) //TODO implement this
- 
+#define NEXT_LIST(bp) ((char *)(bp))
+#define PREV_LIST(bp) ((char *)((char *)(bp) + WSIZE))
+#define SET_PREV(bp, ptr) (*(unsigned int *)(bp) = (unsigned int)(ptr))
+#define SET_NEXT(bp, ptr) (*((unsigned int *)(bp) + WSIZE) = (unsigned int)(ptr))
+
+/* set prev and next block pointer of block pointer bp in free list */
+#define 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
 
@@ -94,10 +99,50 @@ static int mm_check(void);
 static void printblock(void *bp);
 static void checkheap(int verbose);
 static void checkblock(void *bp);
+static int find_list_idx(size_t size);
+static void add_node(void * bp)
+static void remove_node(void *bp)
 
 /* Caution:
  * when using GET_ALLOC, GET_SIZE, inside should be HDRP or FTRP
  */
+
+static int find_list_idx(size_t size)
+{
+    // assume size is multiples of 8 bytes (in correct form)
+    size_t search_size = 2 * DSIZE; // minimum block size
+    int i;
+    for (i = 0; i < MAX_LIST; i++)
+    {
+        if (size <= search_size)
+            return i;
+        search_size <<= 1; // next size 
+    }
+
+    return i;
+}
+
+static void add_node(void *bp)
+{
+    size_t size = GET_SIZE(HDPR(bp));   
+    int idx = find_list_idx(size);
+    void *currp = free_lists_arr[idx];
+
+    if (currp == NULL) // list is empty
+    {
+        SET_PREV(bp, NULL);
+        SET_NEXT(bp, NULL);
+        free_lists_arr[idx] = bp;
+    }
+
+    //TODO start here
+
+}
+
+static void remove_node(void *bp)
+{
+
+}
 
 static void checkblock(void *bp)
 {
@@ -118,6 +163,62 @@ static void checkblock(void *bp)
 }
 
 /*
+ * extend_heap - Extend heap with free block and return its block pointer
+ */
+static void *extend_heap(size_t words)
+{
+    char *bp;
+    size_t asize;
+
+    /* allocate even number of size to maintain alignment */
+    asize = (words % 2) ? (words+1) * WSIZE : words * WSIZE;
+
+    if ((long)(bp = mem_sbrk(asize)) == -1)  
+        return NULL;
+
+    /* Initialize free block header/footer and the epilogue header */
+    PUT(HDRP(bp), PACK(asize, 0));         /* Free block header */
+    PUT(FTRP(bp), PACK(asize, 0));         /* Free block footer */
+    PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */
+
+    /* Coalesce if the previous block was free */
+    bp = coalesce(bp);
+    mm_check(); //FIXME delete this before submission
+    return bp;
+}
+
+/*
+ * coalesce - Boundary tag coalescing. Return ptr to coalesced block
+ */
+static void *coalesce(void *bp)
+{
+    size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
+    size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
+    size_t size = GET_SIZE(HDRP(bp));
+
+    /* case 1: prev - allocated, next - allocated */
+    if (prev_alloc && next_alloc)
+    {
+
+    }
+    /* case 2: prev - allocated, next - free */
+    if (prev_alloc && !next_alloc)
+    {
+
+    }
+    /* case 3: prev - free, next - allocated */
+    if (!prev_alloc && next_alloc)
+    {
+
+    }
+    /* case 4: prev - free, next - free */
+    else
+    {
+
+    }
+}
+
+/*
  * mm_check - check heap corrrectness
  *     returns a nonzero value if heap is consistent
  */
@@ -134,7 +235,8 @@ static int mm_check(void)
     for (ptr = heap_startp; GET_SIZE(HDRP(ptr)) > 0; ptr = NEXT_BLKP(ptr))
     {
         checkblock(ptr);
-        
+        int found = 0;
+
         if (ptr < heap_startp || ptr > heap_endp)
             printf("Error: (%p) out of bounds\n", ptr);
 
@@ -144,22 +246,30 @@ static int mm_check(void)
         /* If free block, is it in appropriate free list? */
         if (GET_ALLOC(HDPR(ptr)) == 0)
         {
-            int i = 0;
-            int found_flag = 0;
-            size_t search_size = GET_SIZE(HDRP(ptr));
-            for (int i = 0; i < MAX_LIST; i++)
+            int idx = find_list_idx(GET_SIZE(HDPR(ptr)));
+            for (char * currp = free_lists_arr[idx]; NEXT_LIST(currp) != NULL; currp = NEXT_LIST(currp))
             {
-                if (free_lists_arr[i] == NULL) // list is empty
+                if (currp == ptr)
                 {
-                    search_size >>= 1; // go to next bigger list
-                    continue;
+                    found = 1;
+                    break;
                 }
-
-                //FIXME start from here
-                search_size >>= 1; // go to next search size (* 2)
             }
-        }
 
+            if (!found)
+                printf("Error: (%p) not in free list when it should be\n", ptr);                
+        }
+    }
+
+    /* Is every block in the free list marked as free? */
+    for (int i = 0; i < MAX_LIST; i++)
+    {
+        char * currp = free_lists_arr[i];
+        for (; NEXT_LIST(currp) != NULL; currp = NEXT_LIST(currp))
+        {
+            if (GET_ALLOC(HDPR(currp)) != 0)
+                printf("Error: allocated block (%p) is in free list\n");
+        }
     }
 
     return 1;
@@ -188,7 +298,7 @@ int mm_init(void)
 
     /* initialize empty free_lists_arr */
     for (list_idx = 0; list_idx < MAX_LIST; list_idx++)
-        free_lists_arr[list_idx] = NULL
+        free_lists_arr[list_idx] = NULL;
 
     return 0;
 }
