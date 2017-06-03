@@ -343,6 +343,7 @@ static int mm_check(void)
  */
 int mm_init(void)
 {
+    print("\nmm_init\n");
     char * heap_startp;
 
     /* create initial empty heap area */
