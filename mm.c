@@ -292,9 +292,9 @@ static void *find_fit(size_t asize)
  */
 static int mm_check(void)
 {
-    size_t *ptr;
-    size_t *heap_startp = mem_heap_lo();
-    size_t *heap_endp = mem_heap_hi();
+    char *ptr;
+    char *heap_startp = mem_heap_lo();
+    char *heap_endp = mem_heap_hi();
 
     /* scan heap */
     for (ptr = heap_startp; GET_SIZE(HDRP(ptr)) > 0; ptr = NEXT_BLKP(ptr))
@@ -343,7 +343,6 @@ static int mm_check(void)
  */
 int mm_init(void)
 {
-    int list_idx;
     char * heap_startp;
 
     /* create initial empty heap area */
