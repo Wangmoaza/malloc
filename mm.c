@@ -97,6 +97,7 @@ void * free_list;
 
 static void add_node(void *bp)
 {
+    printf("\nadd_node\n");
     /* last-in fist-out */
     //size_t size = GET_SIZE(HDRP(bp));   
     void *currp = free_list;
@@ -115,10 +116,12 @@ static void add_node(void *bp)
         SET_SUCC(bp, currp);
         free_list = bp;
     }
+    mm_check();
 }
 
 static void remove_node(void *bp)
 {
+    printf("\nremove_node\n");
     //size_t size = GET_SIZE(HDRP(bp));
     if (PRED(bp) == NULL) // bp is head of list
     {
@@ -140,31 +143,16 @@ static void remove_node(void *bp)
             SET_SUCC(PRED(bp), SUCC(bp));
         }
     }
+    mm_check();
 }
 
-static void checkblock(void *bp)
-{
-    if ((size_t) bp % 8 != 0)
-    {
-        printf("Error: (%p) not 8-byte aligned\n", bp);
-    }
-
-    if (GET(HDRP(bp)) != GET(FTRP(bp)))
-    {
-        printf("Error: (%p) header and footer not identical\n", bp);
-    }
-
-    if (GET_SIZE(HDRP(bp)) < 2 * DSIZE)
-    {
-        printf("Error: (%p) block size is less than 16 bytes\n", bp);
-    }
-}
 
 /*
  * extend_heap - Extend heap with free block and return its block pointer
  */
 static void *extend_heap(size_t words)
 {
+    printf("\nextend_heap\n");
     char *bp;
     size_t asize;
 
@@ -190,6 +178,7 @@ static void *extend_heap(size_t words)
  */
 static void *coalesce(void *bp)
 {
+    printf("\ncoalesce\n");
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
@@ -231,6 +220,7 @@ static void *coalesce(void *bp)
     }
 
     add_node(bp);
+    mm_check();
     return bp;
 }
 
@@ -240,6 +230,7 @@ static void *coalesce(void *bp)
  */
 static void place(void *bp, size_t asize)
 {
+    printf("\nplace\n");
     size_t csize = GET_SIZE(HDRP(bp)); // current block size
     void *remainp;
     size_t remain_size = csize - asize;
@@ -262,7 +253,8 @@ static void place(void *bp, size_t asize)
         remove_node(bp);
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
-    }   
+    }
+    mm_check();   
 }
 
 /* 
@@ -272,6 +264,7 @@ static void place(void *bp, size_t asize)
  */
 static void *find_fit(size_t asize)
 {
+    printf("\nfind_fit\n");
     void *currp = free_list;
 
     if (currp == NULL)
@@ -283,7 +276,26 @@ static void *find_fit(size_t asize)
             return currp;
     }
 
+    mm_check();
     return NULL;
+}
+
+static void checkblock(void *bp)
+{
+    if ((size_t) bp % 8 != 0)
+    {
+        printf("Error: (%p) not 8-byte aligned\n", bp);
+    }
+
+    if (GET(HDRP(bp)) != GET(FTRP(bp)))
+    {
+        printf("Error: (%p) header and footer not identical\n", bp);
+    }
+
+    if (GET_SIZE(HDRP(bp)) < 2 * DSIZE)
+    {
+        printf("Error: (%p) block size is less than 16 bytes\n", bp);
+    }
 }
 
 /*
@@ -332,8 +344,8 @@ static int mm_check(void)
         if (GET_ALLOC(HDRP(currp)) != 0)
             printf("Error: allocated block (%p) is in free list\n", currp);
     }
-    
 
+    printf("mm_check finished\n");
     return 1;
 }
 /* 
