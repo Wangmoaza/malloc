@@ -85,7 +85,6 @@ static void place(void *bp, size_t asize);
 static void *coalesce(void *bp);
 static void *find_fit(size_t asize);
 static int mm_check(void);
-static void printblock(void *bp);
 static void checkblock(void *bp);
 static void add_node(void * bp);
 static void remove_node(void *bp);
@@ -99,7 +98,7 @@ void * free_list;
 static void add_node(void *bp)
 {
     /* last-in fist-out */
-    size_t size = GET_SIZE(HDRP(bp));   
+    //size_t size = GET_SIZE(HDRP(bp));   
     void *currp = free_list;
 
     if (currp == NULL) // list is empty
@@ -120,9 +119,8 @@ static void add_node(void *bp)
 
 static void remove_node(void *bp)
 {
-    size_t size = GET_SIZE(HDRP(bp));
-    if (PRED(bp) == NULL) // bp is he
-        ad of list
+    //size_t size = GET_SIZE(HDRP(bp));
+    if (PRED(bp) == NULL) // bp is head of list
     {
         if (SUCC(bp) == NULL)
             free_list = NULL;
@@ -263,7 +261,7 @@ static void place(void *bp, size_t asize)
     {
         remove_node(bp);
         PUT(HDRP(bp), PACK(csize, 1));
-        PUT(FTRP(bp), PACK(czise, 1));
+        PUT(FTRP(bp), PACK(csize, 1));
     }   
 }
 
@@ -294,7 +292,7 @@ static void *find_fit(size_t asize)
  */
 static int mm_check(void)
 {
-    char *ptr;
+    size_t *ptr;
     int list_idx = 0;
 
     size_t *heap_startp = mem_heap_lo();
@@ -419,11 +417,11 @@ void mm_free(void *ptr)
     if (ptr == 0) 
         return;
 
-    size_t size = GET_SIZE(HDRP(bp));
+    size_t size = GET_SIZE(HDRP(ptr));
 
-    PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(bp), PACK(size, 0));
-    coalesce(bp);
+    PUT(HDRP(ptr), PACK(size, 0));
+    PUT(FTRP(ptr), PACK(size, 0));
+    coalesce(ptr);
     mm_check();
 }
 
