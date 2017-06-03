@@ -330,7 +330,7 @@ static int mm_check(void)
     for (; SUCC(currp) != NULL; currp = SUCC(currp))
     {
         if (GET_ALLOC(HDRP(currp)) != 0)
-            printf("Error: allocated block (%p) is in free list\n");
+            printf("Error: allocated block (%p) is in free list\n", currp);
     }
     
 
