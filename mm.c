@@ -87,8 +87,8 @@ static void *find_fit(size_t asize);
 static int mm_check(void);
 static void printblock(void *bp);
 static void checkblock(void *bp);
-static void add_node(void * bp)
-static void remove_node(void *bp)
+static void add_node(void * bp);
+static void remove_node(void *bp);
 
 /* Caution:
  * when using GET_ALLOC, GET_SIZE, inside should be HDRP or FTRP
