@@ -293,11 +293,8 @@ static void *find_fit(size_t asize)
 static int mm_check(void)
 {
     size_t *ptr;
-    int list_idx = 0;
-
     size_t *heap_startp = mem_heap_lo();
     size_t *heap_endp = mem_heap_hi();
-    size_t *curr_blockp = heap_startp;
 
     /* scan heap */
     for (ptr = heap_startp; GET_SIZE(HDRP(ptr)) > 0; ptr = NEXT_BLKP(ptr))
