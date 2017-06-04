@@ -195,13 +195,14 @@ static void *coalesce(void *bp)
     /* case 1: prev - allocated, next - allocated */
     if (prev_alloc && next_alloc)
     {
-	printf("case 1\n");
+        printf("case 1\n");
+        printf("---coalesce\n");
         return bp;
     }
     /* case 2: prev - allocated, next - free */
     else if (prev_alloc && !next_alloc)
     {
-	printf("case 2\n");
+        printf("case 2\n");
         remove_node(bp);
         remove_node(NEXT_BLKP(bp));
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
@@ -211,7 +212,7 @@ static void *coalesce(void *bp)
     /* case 3: prev - free, next - allocated */
     else if (!prev_alloc && next_alloc)
     {
-	printf("case 3\n");
+        printf("case 3\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
@@ -222,7 +223,7 @@ static void *coalesce(void *bp)
     /* case 4: prev - free, next - free */
     else
     {
-	printf("case 4\n");
+        printf("case 4\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         remove_node(NEXT_BLKP(bp));
@@ -419,6 +420,9 @@ int mm_init(void)
     printf("\nmm_init\n");
     char * heap_startp;
 
+    /* initialize empty free_list */
+    free_list = NULL;
+    
     /* create initial empty heap area */
     if ((heap_startp = mem_sbrk(4*WSIZE)) == (void *)-1)
         return -1;
@@ -433,8 +437,7 @@ int mm_init(void)
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL)
         return -1;
 
-    /* initialize empty free_list */
-    free_list = NULL;
+
 
     mm_check();
     return 0;
