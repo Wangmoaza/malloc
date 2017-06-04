@@ -6,628 +6,168 @@ Testing mm malloc
 Reading tracefile: short1-bal.rep
 Checking mm_malloc for correctness, 
 mm_init
-heap_startp: 0xf61b7008
+heap_startp: 0xf61ff008
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
 	empty free list
---mm_check
+---mm_check
 
 extend_heap
-bp: [0xf61b7018]
+	extend_heap: bp: [0xf61ff018]
 
 add_node
-list is empty
-free_list head: [0xf61b7018]
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [0xf61b7018]
-	traversing free list
-	0xf61b7018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
+	add_node: list is empty
+	add_node: free_list head: [0xf61ff018]
 ---add_node
 
 coalesce
-case 1
+	coalesce: case 1
+---coalesce
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [4096:f] footer: [4096:f]
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [4096:f] footer: [4096:f]
 	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [0xf61b7018]
 	traversing free list
-	0xf61b7018: header: [4096:f] footer: [4096:f]
+	0xf61ff018: header: [4096:f] footer: [4096:f]
 	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
 ---mm_check
 ---extend_heap
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [4096:f] footer: [4096:f]
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [4096:f] footer: [4096:f]
 	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [(nil)]
 	traversing free list
-	Error: (0xf61b7018) not in free list when it should be
-	empty free list
---mm_check
+	0xf61ff018: header: [4096:f] footer: [4096:f]
+	predecessor: [(nil)] successor: [(nil)]
+---mm_check
 
-mm_malloc
+mm_malloc size: 2040
+	mm_malloc: before
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [4096:f] footer: [4096:f]
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [4096:f] footer: [4096:f]
 	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [(nil)]
 	traversing free list
-	Error: (0xf61b7018) not in free list when it should be
-	empty free list
---mm_check
+	0xf61ff018: header: [4096:f] footer: [4096:f]
+	predecessor: [(nil)] successor: [(nil)]
+---mm_check
 
 find_fit
 ---find_fit
 
-extend_heap
-bp: [0xf61b8018]
-
-add_node
-list is empty
-free_list head: [0xf61b8018]
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	Error: contiguous free blocks (0xf61b7018) and (0xf61b8018) escaped coalescing
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [0xf61b8018]
-	traversing free list
-	0xf61b8018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	Error: (0xf61b7018) not in free list when it should be
-	0xf61b8018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b8018] free_list head: [0xf61b8018]
-	traversing free list
-	0xf61b8018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----add_node
-
-coalesce
-case 3
-
-remove_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	Error: contiguous free blocks (0xf61b7018) and (0xf61b8018) escaped coalescing
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b7018) not in free list when it should be
-	0xf61b8018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b8018] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b8018) not in free list when it should be
-	empty free list
---mm_check
----remove_node
-
-remove_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	Error: contiguous free blocks (0xf61b7018) and (0xf61b8018) escaped coalescing
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b7018) not in free list when it should be
-	0xf61b8018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b8018] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b8018) not in free list when it should be
-	empty free list
---mm_check
----remove_node
-
-add_node
-list is empty
-free_list head: [0xf61b7018]
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [0xf61b7018]
-	traversing free list
-	0xf61b7018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----add_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [0xf61b7018]
-	traversing free list
-	0xf61b7018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----coalesce
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [0xf61b7018]
-	traversing free list
-	0xf61b7018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----extend_heap
-
 place
 
 remove_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7018] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b7018) not in free list when it should be
-	empty free list
---mm_check
 ---remove_node
 
 add_node
-list is empty
-free_list head: [0xf61b7818]
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
-	traversing free list
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
+	add_node: list is empty
+	add_node: free_list head: [0xf61ff818]
 ---add_node
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
 	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
 	traversing free list
-	0xf61b7818: header: [6144:f] footer: [6144:f]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
 	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
 ---mm_check
 ---place
+	mm_malloc: after
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
 	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
 	traversing free list
-	0xf61b7818: header: [6144:f] footer: [6144:f]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
 	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
 ---mm_check
 
-mm_malloc
+mm_malloc size: 2040
+	mm_malloc: before
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
 	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
 	traversing free list
-	0xf61b7818: header: [6144:f] footer: [6144:f]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
 	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
 ---mm_check
 
 find_fit
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
-	traversing free list
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
 ---find_fit
-
-extend_heap
-bp: [0xf61b9018]
-
-add_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [0xf61b9018] successor: [(nil)]
-	heap boundary OK
-	Error: contiguous free blocks (0xf61b7818) and (0xf61b9018) escaped coalescing
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b9018]
-	traversing free list
-	0xf61b9018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [0xf61b7818]
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [0xf61b9018] successor: [(nil)]
-	0xf61b9018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [0xf61b7818]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b9018] free_list head: [0xf61b9018]
-	traversing free list
-	0xf61b9018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [0xf61b7818]
-	currp: [0xf61b9018] successor: [0xf61b7818]
-	all blocks in free list marked as free OK
----mm_check
----add_node
-
-coalesce
-case 3
-
-remove_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	Error: contiguous free blocks (0xf61b7818) and (0xf61b9018) escaped coalescing
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
-	traversing free list
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	0xf61b9018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [0xf61b7818]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b9018] free_list head: [0xf61b7818]
-	traversing free list
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	Error: (0xf61b9018) not in free list when it should be
-	all blocks in free list marked as free OK
----mm_check
----remove_node
-
-remove_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [6144:f] footer: [6144:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	Error: contiguous free blocks (0xf61b7818) and (0xf61b9018) escaped coalescing
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b7818) not in free list when it should be
-	0xf61b9018: header: [4096:f] footer: [4096:f]
-	predecessor: [(nil)] successor: [0xf61b7818]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b9018] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b9018) not in free list when it should be
-	empty free list
---mm_check
----remove_node
-
-add_node
-list is empty
-free_list head: [0xf61b7818]
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [10240:f] footer: [10240:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
-	traversing free list
-	0xf61b7818: header: [10240:f] footer: [10240:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----add_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [10240:f] footer: [10240:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
-	traversing free list
-	0xf61b7818: header: [10240:f] footer: [10240:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----coalesce
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [10240:f] footer: [10240:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [0xf61b7818]
-	traversing free list
-	0xf61b7818: header: [10240:f] footer: [10240:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----extend_heap
 
 place
 
 remove_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [10240:f] footer: [10240:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b7818] free_list head: [(nil)]
-	traversing free list
-	Error: (0xf61b7818) not in free list when it should be
-	empty free list
---mm_check
 ---remove_node
 
-add_node
-list is empty
-free_list head: [0xf61b8018]
-
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b8018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b8018] free_list head: [0xf61b8018]
-	traversing free list
-	0xf61b8018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
----mm_check
----add_node
-
-mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b8018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b8018] free_list head: [0xf61b8018]
-	traversing free list
-	0xf61b8018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:a] footer: [2048:a]
+	empty free list
 ---mm_check
 ---place
+	mm_malloc: after
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary OK
-	coalesce OK
-	0xf61b7018: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b7818: header: [2048:a] footer: [2048:a]
-	heap boundary OK
-	coalesce OK
-	0xf61b8018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	heap boundary OK
-	coalesce OK
-	ptr: [0xf61b8018] free_list head: [0xf61b8018]
-	traversing free list
-	0xf61b8018: header: [8192:f] footer: [8192:f]
-	predecessor: [(nil)] successor: [(nil)]
-	all blocks in free list marked as free OK
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:a] footer: [2048:a]
+	empty free list
 ---mm_check
 
-mm_free
+mm_free ptr: 0xf61ff818
+	mm_free: before:
+mm_check
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:a] footer: [2048:a]
+	empty free list
+---mm_check
+
+coalesce
+	coalesce: case 1
+---coalesce
+	mm_free: after:
+mm_check
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
+	predecessor: [0x1010101] successor: [0x1010101]
+	traversing free list
+	Error: (0xf61ff818) not in free list when it should be
+	empty free list
+---mm_check
+
+mm_malloc size: 48
+	mm_malloc: before
 
 mm_check
-	0xf61b7010: header: [8:a] footer: [8:a]
-	Error: (0xf61b7010) block size is 8
-	heap boundary
+	0xf61ff010: header: [8:a] footer: [8:a]
+	Error: (0xf61ff010) block size is 8
+	0xf61ff018: header: [2048:a] footer: [2048:a]
+	0xf61ff818: header: [2048:f] footer: [2048:f]
+	prede

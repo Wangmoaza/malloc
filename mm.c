@@ -111,7 +111,7 @@ static void add_node(void *bp)
         SET_PRED(bp, NULL);
         SET_SUCC(bp, NULL);
         free_list = bp;
-        printf("\t:add_node: free_list head: [%p]\n", free_list);
+        printf("\tadd_node: free_list head: [%p]\n", free_list);
     }
 
     else
@@ -121,7 +121,7 @@ static void add_node(void *bp)
         SET_SUCC(bp, currp);
         free_list = bp;
     }
-    mm_check();
+    //mm_check();
     printf("---add_node\n");
 }
 
@@ -149,7 +149,7 @@ static void remove_node(void *bp)
             SET_SUCC(PRED(bp), SUCC(bp));
         }
     }
-    mm_check();
+    //mm_check();
     printf("---remove_node\n");
 }
 
@@ -223,7 +223,7 @@ static void *coalesce(void *bp)
     /* case 4: prev - free, next - free */
     else
     {
-        printf("coalesce: case 4\n");
+        printf("\tcoalesce: case 4\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         remove_node(NEXT_BLKP(bp));
@@ -372,7 +372,7 @@ static int mm_check(void)
         /* If free block, is it in appropriate free list? */
         if (GET_ALLOC(HDRP(ptr)) == 0)
         {
-            printf("\tptr: [%p] free_list head: [%p]\n", ptr, free_list);
+            //printf("\tptr: [%p] free_list head: [%p]\n", ptr, free_list);
             printf("\ttraversing free list\n");
             for (char * currp = free_list; currp != NULL; currp = SUCC(currp))
             {
@@ -399,7 +399,7 @@ static int mm_check(void)
     /* Is every block in the free list marked as free? */
     for (char *currp = free_list; SUCC(currp) != NULL; currp = SUCC(currp))
     {
-        printf("\tcurrp: [%p] successor: [%p]\n", currp, SUCC(currp));
+        //printf("\tcurrp: [%p] successor: [%p]\n", currp, SUCC(currp));
         if (GET_ALLOC(HDRP(currp)) != 0)
             printf("\tError: allocated block (%p) is in free list\n", currp);
     }
@@ -446,7 +446,7 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-    printf("\nmm_malloc\n");
+    printf("\nmm_malloc size: %u\n", size);
     printf("\tmm_malloc: before\n");
     mm_check();
     size_t asize;      /* Adjusted block size */
@@ -488,8 +488,8 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-    printf("\nmm_free\n");
-    printf("\tmm_free: before:")
+    printf("\nmm_free ptr: %p\n", ptr);
+    printf("\tmm_free: before:");
     mm_check();
     if (ptr == 0) 
         return;
@@ -499,7 +499,7 @@ void mm_free(void *ptr)
     PUT(HDRP(ptr), PACK(size, 0));
     PUT(FTRP(ptr), PACK(size, 0));
     coalesce(ptr);
-    printf("\tmm_free: after:")
+    printf("\tmm_free: after:");
     mm_check();
 }
 
@@ -508,7 +508,8 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-    printf("\nmm_realloc\n");
+    printf("\nmm_realloc ptr: %p size: %u\n", ptr, size);
+    printf("\tmm_realloc: before\n");
     mm_check();
 
     void *oldptr = ptr;
@@ -523,8 +524,9 @@ void *mm_realloc(void *ptr, size_t size)
       copySize = size;
     memcpy(newptr, oldptr, copySize);
     mm_free(oldptr);
-    return newptr;
+    printf("\tmm_realloc: after\n");
     mm_check();
+    return newptr;
 }
 
 
