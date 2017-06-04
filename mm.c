@@ -434,8 +434,6 @@ int mm_init(void)
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL)
         return -1;
 
-
-
     mm_check();
     return 0;
 }
@@ -498,6 +496,7 @@ void mm_free(void *ptr)
 
     PUT(HDRP(ptr), PACK(size, 0));
     PUT(FTRP(ptr), PACK(size, 0));
+    add_node(ptr);
     coalesce(ptr);
     printf("\tmm_free: after:");
     mm_check();
