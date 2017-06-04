@@ -289,7 +289,7 @@ static void *find_fit(size_t asize)
         return NULL;
     }
 
-    for (; SUCC(currp) != NULL; currp = SUCC(currp))
+    for (; currp != NULL; currp = SUCC(currp))
     {
         if (asize <= GET_SIZE(HDRP(currp)))
         {
@@ -359,26 +359,24 @@ static int mm_check(void)
     /* scan heap */
     for (ptr = heap_startp + 2*WSIZE; GET_SIZE(HDRP(ptr)) > 0; ptr = NEXT_BLKP(ptr))
     {
-	printblock(ptr);
+        printblock(ptr);
         checkblock(ptr);
         int found = 0;
 
         if (ptr < heap_startp || ptr > heap_endp)
             printf("\tError: (%p) out of bounds\n", ptr);
 
-	printf("\theap boundary OK\n");
         if (GET_ALLOC(HDRP(ptr)) == 0 && GET_ALLOC(HDRP(NEXT_BLKP(ptr))) == 0)
             printf("\tError: contiguous free blocks (%p) and (%p) escaped coalescing\n", ptr, NEXT_BLKP(ptr));
 
-	printf("\tcoalesce OK\n");
         /* If free block, is it in appropriate free list? */
         if (GET_ALLOC(HDRP(ptr)) == 0)
         {
-	    printf("\tptr: [%p] free_list head: [%p]\n", ptr, free_list);
-	    printf("\ttraversing free list\n");
+            printf("\tptr: [%p] free_list head: [%p]\n", ptr, free_list);
+            printf("\ttraversing free list\n");
             for (char * currp = free_list; currp != NULL; currp = SUCC(currp))
             {
-		printblock(currp);
+                printblock(currp);
                 if (currp == ptr)
                 {
                     found = 1;
@@ -393,20 +391,19 @@ static int mm_check(void)
 
     if (free_list == NULL)
     {
-	printf("\tempty free list\n");
-	printf("--mm_check\n");
-	return 1;
+        printf("\tempty free list\n");
+        printf("---mm_check\n");
+        return 1;
     }
 
     /* Is every block in the free list marked as free? */
     for (char *currp = free_list; SUCC(currp) != NULL; currp = SUCC(currp))
     {
-	printf("\tcurrp: [%p] successor: [%p]\n", currp, SUCC(currp));
+        printf("\tcurrp: [%p] successor: [%p]\n", currp, SUCC(currp));
         if (GET_ALLOC(HDRP(currp)) != 0)
             printf("\tError: allocated block (%p) is in free list\n", currp);
     }
 
-    printf("\tall blocks in free list marked as free OK\n");
     printf("---mm_check\n");    
     return 1;
 }
