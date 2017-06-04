@@ -94,6 +94,7 @@ static void printblock(void *bp);
  */
 
 void * free_list;
+//static char *heap_startp = 0;
 
 static void add_node(void *bp)
 {
@@ -136,7 +137,7 @@ static void remove_node(void *bp)
     }
     else
     {
-        if (SUCC(bp) == NULL)
+        if (SUCC(bp) == NULL) // bp is tail of list
             SET_SUCC(PRED(bp), NULL);
         else
         {
@@ -164,6 +165,7 @@ static void *extend_heap(size_t words)
     if ((long)(bp = mem_sbrk(asize)) == -1)  
         return NULL;
 
+    printf("bp: [%p]\n", bp);
     /* Initialize free block header/footer and the epilogue header */
     PUT(HDRP(bp), PACK(asize, 0));         /* Free block header */
     PUT(FTRP(bp), PACK(asize, 0));         /* Free block footer */
@@ -189,11 +191,13 @@ static void *coalesce(void *bp)
     /* case 1: prev - allocated, next - allocated */
     if (prev_alloc && next_alloc)
     {
+	printf("case 1\n");
         return bp;
     }
     /* case 2: prev - allocated, next - free */
     else if (prev_alloc && !next_alloc)
     {
+	printf("case 2\n");
         remove_node(bp);
         remove_node(NEXT_BLKP(bp));
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
@@ -203,6 +207,7 @@ static void *coalesce(void *bp)
     /* case 3: prev - free, next - allocated */
     else if (!prev_alloc && next_alloc)
     {
+	printf("case 3\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
@@ -213,6 +218,7 @@ static void *coalesce(void *bp)
     /* case 4: prev - free, next - free */
     else
     {
+	printf("case 4\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         remove_node(NEXT_BLKP(bp));
@@ -315,7 +321,6 @@ static void printblock(void *bp)
 {
     size_t hsize, halloc, fsize, falloc;
 
-    checkheap(0);
     hsize = GET_SIZE(HDRP(bp));
     halloc = GET_ALLOC(HDRP(bp));  
     fsize = GET_SIZE(FTRP(bp));
@@ -326,7 +331,7 @@ static void printblock(void *bp)
         return;
     }
 
-    printf("%p: header: [%ld:%c] footer: [%ld:%c]\n", bp, 
+    printf("%p: header: [%u:%c] footer: [%u:%c]\n", bp, 
            hsize, (halloc ? 'a' : 'f'), 
            fsize, (falloc ? 'a' : 'f'));
     if (halloc == 0)
@@ -347,17 +352,20 @@ static int mm_check(void)
     char *heap_endp = mem_heap_hi();
 
     /* scan heap */
-    for (ptr = heap_startp; GET_SIZE(HDRP(ptr)) > 0; ptr = NEXT_BLKP(ptr))
+    for (ptr = heap_startp + 2*WSIZE; GET_SIZE(HDRP(ptr)) > 0; ptr = NEXT_BLKP(ptr))
     {
+	printblock(ptr);
         checkblock(ptr);
         int found = 0;
 
         if (ptr < heap_startp || ptr > heap_endp)
             printf("Error: (%p) out of bounds\n", ptr);
 
+	printf("heap boundary OK\n");
         if (GET_ALLOC(HDRP(ptr)) == 0 && GET_ALLOC(HDRP(NEXT_BLKP(ptr))) == 0)
             printf("Error: contiguous free blocks (%p) and (%p) escaped coalescing\n", ptr, NEXT_BLKP(ptr));
 
+	printf("coalesce OK\n");
         /* If free block, is it in appropriate free list? */
         if (GET_ALLOC(HDRP(ptr)) == 0)
         {
@@ -375,14 +383,24 @@ static int mm_check(void)
         }
     }
 
-    /* Is every block in the free list marked as free? */
-    char * currp = free_list;
-    for (; SUCC(currp) != NULL; currp = SUCC(currp))
+    printf("free block in list OK\n");
+
+    if (free_list == NULL)
     {
+	printf("empty free list\n");
+	printf("--mm_check\n");
+	return 1;
+    }
+
+    /* Is every block in the free list marked as free? */
+    for (char *currp = free_list; SUCC(currp) != NULL; currp = SUCC(currp))
+    {
+	printf("currp: [%p] successor: [%p]\n", currp, SUCC(currp));
         if (GET_ALLOC(HDRP(currp)) != 0)
             printf("Error: allocated block (%p) is in free list\n", currp);
     }
 
+    printf("all blocks in free list marked as free OK\n");
     printf("---mm_check\n");    
     return 1;
 }
@@ -400,6 +418,7 @@ int mm_init(void)
     if ((heap_startp = mem_sbrk(4*WSIZE)) == (void *)-1)
         return -1;
 
+    printf("heap_startp: %p\n", heap_startp);
     PUT(heap_startp, 0);                            /* alignment padding */
     PUT(heap_startp + (1*WSIZE), PACK(DSIZE, 1));   /* prologue header */
     PUT(heap_startp + (2*WSIZE), PACK(DSIZE, 1));   /* prologue footer */
