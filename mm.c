@@ -107,11 +107,11 @@ static void add_node(void *bp)
 
     if (free_list == NULL) // list is empty
     {
-	printf("list is empty\n");
+        printf("\tadd_node: list is empty\n");
         SET_PRED(bp, NULL);
         SET_SUCC(bp, NULL);
         free_list = bp;
-	printf("free_list head: [%p]\n", free_list);
+        printf("\t:add_node: free_list head: [%p]\n", free_list);
     }
 
     else
@@ -169,7 +169,7 @@ static void *extend_heap(size_t words)
     if ((long)(bp = mem_sbrk(asize)) == -1)  
         return NULL;
 
-    printf("bp: [%p]\n", bp);
+    printf("\textend_heap: bp: [%p]\n", bp);
     /* Initialize free block header/footer and the epilogue header */
     PUT(HDRP(bp), PACK(asize, 0));         /* Free block header */
     PUT(FTRP(bp), PACK(asize, 0));         /* Free block footer */
@@ -195,14 +195,14 @@ static void *coalesce(void *bp)
     /* case 1: prev - allocated, next - allocated */
     if (prev_alloc && next_alloc)
     {
-        printf("case 1\n");
+        printf("\tcoalesce: case 1\n");
         printf("---coalesce\n");
         return bp;
     }
     /* case 2: prev - allocated, next - free */
     else if (prev_alloc && !next_alloc)
     {
-        printf("case 2\n");
+        printf("\tcoalesce: case 2\n");
         remove_node(bp);
         remove_node(NEXT_BLKP(bp));
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
@@ -212,7 +212,7 @@ static void *coalesce(void *bp)
     /* case 3: prev - free, next - allocated */
     else if (!prev_alloc && next_alloc)
     {
-        printf("case 3\n");
+        printf("\tcoalesce: case 3\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
@@ -223,7 +223,7 @@ static void *coalesce(void *bp)
     /* case 4: prev - free, next - free */
     else
     {
-        printf("case 4\n");
+        printf("coalesce: case 4\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         remove_node(NEXT_BLKP(bp));
@@ -447,6 +447,7 @@ int mm_init(void)
 void *mm_malloc(size_t size)
 {
     printf("\nmm_malloc\n");
+    printf("\tmm_malloc: before\n");
     mm_check();
     size_t asize;      /* Adjusted block size */
     size_t extendsize; /* Amount to extend heap if no fit */
@@ -466,6 +467,8 @@ void *mm_malloc(size_t size)
     if ((bp = find_fit(asize)) != NULL) 
     {
         place(bp, asize);
+        printf("\tmm_malloc: after\n");
+        mm_check();
         return bp;
     }
 
@@ -475,6 +478,7 @@ void *mm_malloc(size_t size)
         return NULL;
     
     place(bp, asize);
+    printf("\tmm_malloc: after\n");
     mm_check();
     return bp;
 }
@@ -485,6 +489,7 @@ void *mm_malloc(size_t size)
 void mm_free(void *ptr)
 {
     printf("\nmm_free\n");
+    printf("\tmm_free: before:")
     mm_check();
     if (ptr == 0) 
         return;
@@ -494,6 +499,7 @@ void mm_free(void *ptr)
     PUT(HDRP(ptr), PACK(size, 0));
     PUT(FTRP(ptr), PACK(size, 0));
     coalesce(ptr);
+    printf("\tmm_free: after:")
     mm_check();
 }
 
