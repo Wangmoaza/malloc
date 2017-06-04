@@ -66,10 +66,12 @@ team_t team = {
 /* $end mallocmacros */
 
 /* Given block ptr bp, go to next and previous block in free list by pointer */
-#define PRED(bp) ((char *)(bp))
-#define SUCC(bp) ((char *)(bp) + WSIZE)
-#define SET_PRED(bp, ptr) (*(unsigned int *)(bp) = (unsigned int)(ptr))
-#define SET_SUCC(bp, ptr) (*((unsigned int *)(bp) + WSIZE) = (unsigned int)(ptr))
+#define PRED_PTR(bp) ((char *)(bp))
+#define SUCC_PTR(bp) ((char *)(bp) + WSIZE)
+#define PRED(bp) (*(char **)(bp))
+#define SUCC(bp) (*(char **)(SUCC_PTR(bp)))
+#define SET_PRED(bp, ptr) (*(unsigned int *)(PRED_PTR(bp)) = (unsigned int)(ptr))
+#define SET_SUCC(bp, ptr) (*((unsigned int *)(SUCC_PTR(bp))) = (unsigned int)(ptr))
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -103,11 +105,13 @@ static void add_node(void *bp)
     //size_t size = GET_SIZE(HDRP(bp));   
     void *currp = free_list;
 
-    if (currp == NULL) // list is empty
+    if (free_list == NULL) // list is empty
     {
+	printf("list is empty\n");
         SET_PRED(bp, NULL);
         SET_SUCC(bp, NULL);
         free_list = bp;
+	printf("free_list head: [%p]\n", free_list);
     }
 
     else
@@ -170,7 +174,7 @@ static void *extend_heap(size_t words)
     PUT(HDRP(bp), PACK(asize, 0));         /* Free block header */
     PUT(FTRP(bp), PACK(asize, 0));         /* Free block footer */
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */
-
+    add_node(bp);
     /* Coalesce if the previous block was free */
     bp = coalesce(bp);
     mm_check(); //FIXME delete this before submission
@@ -302,18 +306,18 @@ static void checkblock(void *bp)
 {
     if ((size_t) bp % 8 != 0)
     {
-        printf("Error: (%p) not 8-byte aligned\n", bp);
+        printf("\tError: (%p) not 8-byte aligned\n", bp);
     }
 
     if (GET(HDRP(bp)) != GET(FTRP(bp)))
     {
-        printf("Error: (%p) header and footer not identical\n", bp);
-        printf("header: %x\tfooter:%x\n", GET(HDRP(bp)), GET(FTRP(bp)));
+        printf("\tError: (%p) header and footer not identical\n", bp);
+        printf("\theader: %x\tfooter:%x\n", GET(HDRP(bp)), GET(FTRP(bp)));
     }
 
     if (GET_SIZE(HDRP(bp)) < 2 * DSIZE)
     {
-        printf("Error: (%p) block size is %d\n", bp, GET_SIZE(HDRP(bp)));
+        printf("\tError: (%p) block size is %d\n", bp, GET_SIZE(HDRP(bp)));
     }
 }
 
@@ -327,16 +331,16 @@ static void printblock(void *bp)
     falloc = GET_ALLOC(FTRP(bp));  
 
     if (hsize == 0) {
-        printf("%p: EOL\n", bp);
+        printf("\t%p: EOL\n", bp);
         return;
     }
 
-    printf("%p: header: [%u:%c] footer: [%u:%c]\n", bp, 
+    printf("\t%p: header: [%u:%c] footer: [%u:%c]\n", bp, 
            hsize, (halloc ? 'a' : 'f'), 
            fsize, (falloc ? 'a' : 'f'));
     if (halloc == 0)
     {
-        printf("predecessor: [%p] successor: [%p]\n", PRED(bp), SUCC(bp));
+        printf("\tpredecessor: [%p] successor: [%p]\n", PRED(bp), SUCC(bp));
     }
 }
 
@@ -359,18 +363,21 @@ static int mm_check(void)
         int found = 0;
 
         if (ptr < heap_startp || ptr > heap_endp)
-            printf("Error: (%p) out of bounds\n", ptr);
+            printf("\tError: (%p) out of bounds\n", ptr);
 
-	printf("heap boundary OK\n");
+	printf("\theap boundary OK\n");
         if (GET_ALLOC(HDRP(ptr)) == 0 && GET_ALLOC(HDRP(NEXT_BLKP(ptr))) == 0)
-            printf("Error: contiguous free blocks (%p) and (%p) escaped coalescing\n", ptr, NEXT_BLKP(ptr));
+            printf("\tError: contiguous free blocks (%p) and (%p) escaped coalescing\n", ptr, NEXT_BLKP(ptr));
 
-	printf("coalesce OK\n");
+	printf("\tcoalesce OK\n");
         /* If free block, is it in appropriate free list? */
         if (GET_ALLOC(HDRP(ptr)) == 0)
         {
-            for (char * currp = free_list; SUCC(currp) != NULL; currp = SUCC(currp))
+	    printf("\tptr: [%p] free_list head: [%p]\n", ptr, free_list);
+	    printf("\ttraversing free list\n");
+            for (char * currp = free_list; currp != NULL; currp = SUCC(currp))
             {
+		printblock(currp);
                 if (currp == ptr)
                 {
                     found = 1;
@@ -379,15 +386,13 @@ static int mm_check(void)
             }
 
             if (!found)
-                printf("Error: (%p) not in free list when it should be\n", ptr);                
+                printf("\tError: (%p) not in free list when it should be\n", ptr);                
         }
     }
 
-    printf("free block in list OK\n");
-
     if (free_list == NULL)
     {
-	printf("empty free list\n");
+	printf("\tempty free list\n");
 	printf("--mm_check\n");
 	return 1;
     }
@@ -395,12 +400,12 @@ static int mm_check(void)
     /* Is every block in the free list marked as free? */
     for (char *currp = free_list; SUCC(currp) != NULL; currp = SUCC(currp))
     {
-	printf("currp: [%p] successor: [%p]\n", currp, SUCC(currp));
+	printf("\tcurrp: [%p] successor: [%p]\n", currp, SUCC(currp));
         if (GET_ALLOC(HDRP(currp)) != 0)
-            printf("Error: allocated block (%p) is in free list\n", currp);
+            printf("\tError: allocated block (%p) is in free list\n", currp);
     }
 
-    printf("all blocks in free list marked as free OK\n");
+    printf("\tall blocks in free list marked as free OK\n");
     printf("---mm_check\n");    
     return 1;
 }
@@ -424,6 +429,7 @@ int mm_init(void)
     PUT(heap_startp + (2*WSIZE), PACK(DSIZE, 1));   /* prologue footer */
     PUT(heap_startp + (3*WSIZE), PACK(0, 1));       /* epilogue header */
     
+    mm_check();
     if (extend_heap(CHUNKSIZE/WSIZE) == NULL)
         return -1;
 
