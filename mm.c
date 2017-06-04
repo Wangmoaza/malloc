@@ -88,7 +88,7 @@ static int mm_check(void);
 static void checkblock(void *bp);
 static void add_node(void * bp);
 static void remove_node(void *bp);
-
+static void printblock(void *bp);
 /* Caution:
  * when using GET_ALLOC, GET_SIZE, inside should be HDRP or FTRP
  */
@@ -117,6 +117,7 @@ static void add_node(void *bp)
         free_list = bp;
     }
     mm_check();
+    printf("---add_node\n");
 }
 
 static void remove_node(void *bp)
@@ -144,6 +145,7 @@ static void remove_node(void *bp)
         }
     }
     mm_check();
+    printf("---remove_node\n");
 }
 
 
@@ -170,6 +172,7 @@ static void *extend_heap(size_t words)
     /* Coalesce if the previous block was free */
     bp = coalesce(bp);
     mm_check(); //FIXME delete this before submission
+    printf("---extend_heap\n");
     return bp;
 }
 
@@ -221,6 +224,7 @@ static void *coalesce(void *bp)
 
     add_node(bp);
     mm_check();
+    printf("---coalesce\n");
     return bp;
 }
 
@@ -254,7 +258,8 @@ static void place(void *bp, size_t asize)
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
     }
-    mm_check();   
+    mm_check();
+    printf("---place\n");
 }
 
 /* 
@@ -268,15 +273,22 @@ static void *find_fit(size_t asize)
     void *currp = free_list;
 
     if (currp == NULL)
+    {
+        printf("---find_fit\n");
         return NULL;
+    }
 
     for (; SUCC(currp) != NULL; currp = SUCC(currp))
     {
         if (asize <= GET_SIZE(HDRP(currp)))
+        {
+            printf("---find_fit\n");
             return currp;
+        }
     }
 
     mm_check();
+    printf("---find_fit\n");
     return NULL;
 }
 
@@ -290,11 +302,36 @@ static void checkblock(void *bp)
     if (GET(HDRP(bp)) != GET(FTRP(bp)))
     {
         printf("Error: (%p) header and footer not identical\n", bp);
+        printf("header: %x\tfooter:%x\n", GET(HDRP(bp)), GET(FTRP(bp)));
     }
 
     if (GET_SIZE(HDRP(bp)) < 2 * DSIZE)
     {
-        printf("Error: (%p) block size is less than 16 bytes\n", bp);
+        printf("Error: (%p) block size is %d\n", bp, GET_SIZE(HDRP(bp)));
+    }
+}
+
+static void printblock(void *bp) 
+{
+    size_t hsize, halloc, fsize, falloc;
+
+    checkheap(0);
+    hsize = GET_SIZE(HDRP(bp));
+    halloc = GET_ALLOC(HDRP(bp));  
+    fsize = GET_SIZE(FTRP(bp));
+    falloc = GET_ALLOC(FTRP(bp));  
+
+    if (hsize == 0) {
+        printf("%p: EOL\n", bp);
+        return;
+    }
+
+    printf("%p: header: [%ld:%c] footer: [%ld:%c]\n", bp, 
+           hsize, (halloc ? 'a' : 'f'), 
+           fsize, (falloc ? 'a' : 'f'));
+    if (halloc == 0)
+    {
+        printf("predecessor: [%p] successor: [%p]\n", PRED(bp), SUCC(bp));
     }
 }
 
@@ -304,6 +341,7 @@ static void checkblock(void *bp)
  */
 static int mm_check(void)
 {
+    printf("\nmm_check\n");
     char *ptr;
     char *heap_startp = mem_heap_lo();
     char *heap_endp = mem_heap_hi();
@@ -345,7 +383,7 @@ static int mm_check(void)
             printf("Error: allocated block (%p) is in free list\n", currp);
     }
 
-    printf("mm_check finished\n");
+    printf("---mm_check\n");    
     return 1;
 }
 /* 
