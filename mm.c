@@ -100,18 +100,18 @@ void * free_list;
 
 static void add_node(void *bp)
 {
-    printf("\nadd_node\n");
+    //printf("\nadd_node\n");
     /* last-in fist-out */
     //size_t size = GET_SIZE(HDRP(bp));   
     void *currp = free_list;
 
     if (free_list == NULL) // list is empty
     {
-        printf("\tadd_node: list is empty\n");
+        //printf("\tadd_node: list is empty\n");
         SET_PRED(bp, NULL);
         SET_SUCC(bp, NULL);
         free_list = bp;
-        printf("\tadd_node: free_list head: [%p]\n", free_list);
+        //printf("\tadd_node: free_list head: [%p]\n", free_list);
     }
 
     else
@@ -122,12 +122,12 @@ static void add_node(void *bp)
         free_list = bp;
     }
     //mm_check();
-    printf("---add_node\n");
+    //printf("---add_node\n");
 }
 
 static void remove_node(void *bp)
 {
-    printf("\nremove_node\n");
+    //printf("\nremove_node\n");
     //size_t size = GET_SIZE(HDRP(bp));
     if (PRED(bp) == NULL) // bp is head of list
     {
@@ -150,7 +150,7 @@ static void remove_node(void *bp)
         }
     }
     //mm_check();
-    printf("---remove_node\n");
+    //printf("---remove_node\n");
 }
 
 
@@ -159,7 +159,7 @@ static void remove_node(void *bp)
  */
 static void *extend_heap(size_t words)
 {
-    printf("\nextend_heap\n");
+    //printf("\nextend_heap\n");
     char *bp;
     size_t asize;
 
@@ -169,7 +169,7 @@ static void *extend_heap(size_t words)
     if ((long)(bp = mem_sbrk(asize)) == -1)  
         return NULL;
 
-    printf("\textend_heap: bp: [%p]\n", bp);
+    //printf("\textend_heap: bp: [%p]\n", bp);
     /* Initialize free block header/footer and the epilogue header */
     PUT(HDRP(bp), PACK(asize, 0));         /* Free block header */
     PUT(FTRP(bp), PACK(asize, 0));         /* Free block footer */
@@ -178,7 +178,7 @@ static void *extend_heap(size_t words)
     /* Coalesce if the previous block was free */
     bp = coalesce(bp);
     mm_check(); //FIXME delete this before submission
-    printf("---extend_heap\n");
+    //printf("---extend_heap\n");
     return bp;
 }
 
@@ -187,7 +187,7 @@ static void *extend_heap(size_t words)
  */
 static void *coalesce(void *bp)
 {
-    printf("\ncoalesce\n");
+    //printf("\ncoalesce\n");
     size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
     size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
     size_t size = GET_SIZE(HDRP(bp));
@@ -195,14 +195,14 @@ static void *coalesce(void *bp)
     /* case 1: prev - allocated, next - allocated */
     if (prev_alloc && next_alloc)
     {
-        printf("\tcoalesce: case 1\n");
-        printf("---coalesce\n");
+        //printf("\tcoalesce: case 1\n");
+        //printf("---coalesce\n");
         return bp;
     }
     /* case 2: prev - allocated, next - free */
     else if (prev_alloc && !next_alloc)
     {
-        printf("\tcoalesce: case 2\n");
+        //printf("\tcoalesce: case 2\n");
         remove_node(bp);
         remove_node(NEXT_BLKP(bp));
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
@@ -212,7 +212,7 @@ static void *coalesce(void *bp)
     /* case 3: prev - free, next - allocated */
     else if (!prev_alloc && next_alloc)
     {
-        printf("\tcoalesce: case 3\n");
+        //printf("\tcoalesce: case 3\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
@@ -223,7 +223,7 @@ static void *coalesce(void *bp)
     /* case 4: prev - free, next - free */
     else
     {
-        printf("\tcoalesce: case 4\n");
+        //printf("\tcoalesce: case 4\n");
         remove_node(bp);
         remove_node(PREV_BLKP(bp));
         remove_node(NEXT_BLKP(bp));
@@ -235,7 +235,7 @@ static void *coalesce(void *bp)
 
     add_node(bp);
     mm_check();
-    printf("---coalesce\n");
+    //printf("---coalesce\n");
     return bp;
 }
 
@@ -245,7 +245,7 @@ static void *coalesce(void *bp)
  */
 static void place(void *bp, size_t asize)
 {
-    printf("\nplace\n");
+    //printf("\nplace\n");
     size_t csize = GET_SIZE(HDRP(bp)); // current block size
     void *remainp;
     size_t remain_size = csize - asize;
@@ -270,7 +270,7 @@ static void place(void *bp, size_t asize)
         PUT(FTRP(bp), PACK(csize, 1));
     }
     mm_check();
-    printf("---place\n");
+    //printf("---place\n");
 }
 
 /* 
@@ -280,12 +280,12 @@ static void place(void *bp, size_t asize)
  */
 static void *find_fit(size_t asize)
 {
-    printf("\nfind_fit\n");
+    //printf("\nfind_fit\n");
     void *currp = free_list;
 
     if (currp == NULL)
     {
-        printf("---find_fit\n");
+        //printf("---find_fit\n");
         return NULL;
     }
 
@@ -293,13 +293,13 @@ static void *find_fit(size_t asize)
     {
         if (asize <= GET_SIZE(HDRP(currp)))
         {
-            printf("---find_fit\n");
+            //printf("---find_fit\n");
             return currp;
         }
     }
 
     mm_check();
-    printf("---find_fit\n");
+    //printf("---find_fit\n");
     return NULL;
 }
 
@@ -307,18 +307,18 @@ static void checkblock(void *bp)
 {
     if ((size_t) bp % 8 != 0)
     {
-        printf("\tError: (%p) not 8-byte aligned\n", bp);
+        //printf("\tError: (%p) not 8-byte aligned\n", bp);
     }
 
     if (GET(HDRP(bp)) != GET(FTRP(bp)))
     {
-        printf("\tError: (%p) header and footer not identical\n", bp);
-        printf("\theader: %x\tfooter:%x\n", GET(HDRP(bp)), GET(FTRP(bp)));
+        //printf("\tError: (%p) header and footer not identical\n", bp);
+        //printf("\theader: %x\tfooter:%x\n", GET(HDRP(bp)), GET(FTRP(bp)));
     }
 
     if (GET_SIZE(HDRP(bp)) < 2 * DSIZE)
     {
-        printf("\tError: (%p) block size is %d\n", bp, GET_SIZE(HDRP(bp)));
+        //printf("\tError: (%p) block size is %d\n", bp, GET_SIZE(HDRP(bp)));
     }
 }
 
@@ -332,16 +332,16 @@ static void printblock(void *bp)
     falloc = GET_ALLOC(FTRP(bp));  
 
     if (hsize == 0) {
-        printf("\t%p: EOL\n", bp);
+        //printf("\t%p: EOL\n", bp);
         return;
     }
 
-    printf("\t%p: header: [%u:%c] footer: [%u:%c]\n", bp, 
+    //printf("\t%p: header: [%u:%c] footer: [%u:%c]\n", bp, 
            hsize, (halloc ? 'a' : 'f'), 
            fsize, (falloc ? 'a' : 'f'));
     if (halloc == 0)
     {
-        printf("\tpredecessor: [%p] successor: [%p]\n", PRED(bp), SUCC(bp));
+        //printf("\tpredecessor: [%p] successor: [%p]\n", PRED(bp), SUCC(bp));
     }
 }
 
@@ -351,7 +351,7 @@ static void printblock(void *bp)
  */
 static int mm_check(void)
 {
-    printf("\nmm_check\n");
+    //printf("\nmm_check\n");
     char *ptr;
     char *heap_startp = mem_heap_lo();
     char *heap_endp = mem_heap_hi();
@@ -364,16 +364,16 @@ static int mm_check(void)
         int found = 0;
 
         if (ptr < heap_startp || ptr > heap_endp)
-            printf("\tError: (%p) out of bounds\n", ptr);
+            //printf("\tError: (%p) out of bounds\n", ptr);
 
         if (GET_ALLOC(HDRP(ptr)) == 0 && GET_ALLOC(HDRP(NEXT_BLKP(ptr))) == 0)
-            printf("\tError: contiguous free blocks (%p) and (%p) escaped coalescing\n", ptr, NEXT_BLKP(ptr));
+            //printf("\tError: contiguous free blocks (%p) and (%p) escaped coalescing\n", ptr, NEXT_BLKP(ptr));
 
         /* If free block, is it in appropriate free list? */
         if (GET_ALLOC(HDRP(ptr)) == 0)
         {
-            //printf("\tptr: [%p] free_list head: [%p]\n", ptr, free_list);
-            printf("\ttraversing free list\n");
+            ////printf("\tptr: [%p] free_list head: [%p]\n", ptr, free_list);
+            //printf("\ttraversing free list\n");
             for (char * currp = free_list; currp != NULL; currp = SUCC(currp))
             {
                 printblock(currp);
@@ -385,26 +385,26 @@ static int mm_check(void)
             }
 
             if (!found)
-                printf("\tError: (%p) not in free list when it should be\n", ptr);                
+                //printf("\tError: (%p) not in free list when it should be\n", ptr);                
         }
     }
 
     if (free_list == NULL)
     {
-        printf("\tempty free list\n");
-        printf("---mm_check\n");
+        //printf("\tempty free list\n");
+        //printf("---mm_check\n");
         return 1;
     }
 
     /* Is every block in the free list marked as free? */
     for (char *currp = free_list; SUCC(currp) != NULL; currp = SUCC(currp))
     {
-        //printf("\tcurrp: [%p] successor: [%p]\n", currp, SUCC(currp));
+        ////printf("\tcurrp: [%p] successor: [%p]\n", currp, SUCC(currp));
         if (GET_ALLOC(HDRP(currp)) != 0)
-            printf("\tError: allocated block (%p) is in free list\n", currp);
+            //printf("\tError: allocated block (%p) is in free list\n", currp);
     }
 
-    printf("---mm_check\n");    
+    //printf("---mm_check\n");    
     return 1;
 }
 /* 
@@ -414,7 +414,7 @@ static int mm_check(void)
  */
 int mm_init(void)
 {
-    printf("\nmm_init\n");
+    //printf("\nmm_init\n");
     char * heap_startp;
 
     /* initialize empty free_list */
@@ -424,7 +424,7 @@ int mm_init(void)
     if ((heap_startp = mem_sbrk(4*WSIZE)) == (void *)-1)
         return -1;
 
-    printf("heap_startp: %p\n", heap_startp);
+    //printf("heap_startp: %p\n", heap_startp);
     PUT(heap_startp, 0);                            /* alignment padding */
     PUT(heap_startp + (1*WSIZE), PACK(DSIZE, 1));   /* prologue header */
     PUT(heap_startp + (2*WSIZE), PACK(DSIZE, 1));   /* prologue footer */
@@ -444,8 +444,8 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-    printf("\nmm_malloc size: %u\n", size);
-    printf("\tmm_malloc: before\n");
+    //printf("\nmm_malloc size: %u\n", size);
+    //printf("\tmm_malloc: before\n");
     mm_check();
     size_t asize;      /* Adjusted block size */
     size_t extendsize; /* Amount to extend heap if no fit */
@@ -465,7 +465,7 @@ void *mm_malloc(size_t size)
     if ((bp = find_fit(asize)) != NULL) 
     {
         place(bp, asize);
-        printf("\tmm_malloc: after\n");
+        //printf("\tmm_malloc: after\n");
         mm_check();
         return bp;
     }
@@ -476,7 +476,7 @@ void *mm_malloc(size_t size)
         return NULL;
     
     place(bp, asize);
-    printf("\tmm_malloc: after\n");
+    //printf("\tmm_malloc: after\n");
     mm_check();
     return bp;
 }
@@ -486,8 +486,8 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-    printf("\nmm_free ptr: %p\n", ptr);
-    printf("\tmm_free: before:");
+    //printf("\nmm_free ptr: %p\n", ptr);
+    //printf("\tmm_free: before:");
     mm_check();
     if (ptr == 0) 
         return;
@@ -498,7 +498,7 @@ void mm_free(void *ptr)
     PUT(FTRP(ptr), PACK(size, 0));
     add_node(ptr);
     coalesce(ptr);
-    printf("\tmm_free: after:");
+    //printf("\tmm_free: after:");
     mm_check();
 }
 
@@ -507,8 +507,8 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-    printf("\nmm_realloc ptr: %p size: %u\n", ptr, size);
-    printf("\tmm_realloc: before\n");
+    //printf("\nmm_realloc ptr: %p size: %u\n", ptr, size);
+    //printf("\tmm_realloc: before\n");
     mm_check();
 
     void *oldptr = ptr;
@@ -523,7 +523,7 @@ void *mm_realloc(void *ptr, size_t size)
       copySize = size;
     memcpy(newptr, oldptr, copySize);
     mm_free(oldptr);
-    printf("\tmm_realloc: after\n");
+    //printf("\tmm_realloc: after\n");
     mm_check();
     return newptr;
 }
